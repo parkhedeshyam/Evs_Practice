@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Class 4 EVS – Interactive Learning App</title>
+<style>
+:root{
+  --green:#2E7D32;--lgreen:#E8F5E9;--dgreen:#1B5E20;
+  --blue:#1565C0;--lblue:#E3F2FD;
+  --orange:#E65100;--lorange:#FFF3E0;
+  --purple:#6A1B9A;--lpurple:#F3E5F5;
+  --red:#C62828;--lred:#FFEBEE;
+  --teal:#00695C;--lteal:#E0F2F1;
+  --amber:#F57F17;--lamber:#FFFDE7;
+  --dark:#212121;--grey:#757575;--lgrey:#F5F5F5;--white:#fff;
+  --radius:10px;--shadow:0 2px 12px rgba(0,0,0,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#F0F4F8;color:var(--dark);min-height:100vh}
+
+/* ── Header ── */
+header{background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;padding:18px 20px 12px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+header h1{font-size:1.45rem;font-weight:700;letter-spacing:.5px}
+header p{font-size:.8rem;opacity:.88;margin-top:2px}
+
+/* ── Tab Bar ── */
+nav{display:flex;overflow-x:auto;background:#fff;border-bottom:2px solid #e0e0e0;gap:2px;padding:0 8px;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+.tab{flex:none;padding:11px 16px;font-size:.82rem;font-weight:600;color:var(--grey);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;border-radius:6px 6px 0 0}
+.tab:hover{color:var(--green);background:#f1f8f1}
+.tab.active{color:var(--green);border-bottom-color:var(--green);background:#f1f8f1}
+
+/* ── Page sections ── */
+.page{display:none;padding:18px 14px 32px;max-width:920px;margin:0 auto}
+.page.active{display:block}
+
+/* ── Cards ── */
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+.card-header{padding:12px 16px;font-size:1rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px}
+.card-body{padding:14px 16px}
+
+/* ── Section banners ── */
+.banner{padding:10px 16px;border-radius:8px;font-weight:700;font-size:.95rem;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* ── Tables ── */
+.tbl{width:100%;border-collapse:collapse;font-size:.85rem}
+.tbl th{background:var(--green);color:#fff;padding:7px 10px;text-align:left}
+.tbl td{padding:6px 10px;border-bottom:1px solid #e8e8e8}
+.tbl tr:nth-child(even) td{background:#f9fdf9}
+
+/* ── Chips/badges ── */
+.chip{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600;margin:2px}
+
+/* ── MCQ ── */
+.mcq-block{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;padding:14px 16px}
+.mcq-q{font-size:.95rem;font-weight:700;margin-bottom:10px;color:var(--dark)}
+.opt{display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:7px;margin-bottom:6px;cursor:pointer;border:1.5px solid #e0e0e0;transition:all .18s;font-size:.88rem}
+.opt:hover{border-color:var(--green);background:var(--lgreen)}
+.opt.correct{border-color:var(--green);background:var(--lgreen);color:var(--dgreen)}
+.opt.wrong{border-color:var(--red);background:var(--lred);color:var(--red)}
+.opt.reveal-correct{border-color:var(--green);background:var(--lgreen);color:var(--dgreen)}
+.opt-icon{width:22px;height:22px;border-radius:50%;border:1.5px solid #ccc;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0}
+.explain{margin-top:8px;padding:8px 12px;background:var(--lamber);border-left:3px solid var(--amber);border-radius:0 6px 6px 0;font-size:.82rem;color:#5D4037;display:none}
+.mcq-score-bar{background:#fff;border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.score-circle{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:flex-end;flex-direction:column;font-weight:700;font-size:.75rem;color:#fff;background:var(--green);padding-bottom:8px}
+.score-big{font-size:1.4rem;line-height:1}
+.progress-bar{flex:1;background:#e0e0e0;border-radius:10px;height:10px;min-width:120px}
+.progress-fill{height:10px;border-radius:10px;background:var(--green);transition:width .4s}
+
+/* ── Short Q&A ── */
+.qa-item{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:10px;overflow:hidden}
+.qa-q{padding:11px 14px;font-weight:600;font-size:.9rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.qa-q:hover{background:#f5f5f5}
+.qa-a{padding:0 14px;max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s}
+.qa-a.open{max-height:120px;padding:0 14px 12px}
+.qa-ans{color:var(--green);font-weight:600;font-size:.88rem;margin-bottom:4px}
+.qa-exp{color:var(--grey);font-size:.82rem;font-style:italic}
+.chevron{transition:transform .3s;font-size:.9rem;color:var(--grey)}
+.open+* .chevron,.qa-q[data-open="1"] .chevron{transform:rotate(180deg)}
+
+/* ── Diagram boxes ── */
+.diag-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:12px 0}
+.diag-box{border-radius:8px;padding:12px 10px;text-align:center;font-size:.82rem}
+.diag-box .icon{font-size:1.6rem;display:block;margin-bottom:6px}
+.diag-box .label{font-weight:700;display:block;font-size:.85rem}
+.diag-box .sub{font-size:.75rem;margin-top:4px;opacity:.85}
+
+/* ── Life cycle ── */
+.lifecycle{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin:12px 0;justify-content:center}
+.lc-step{border-radius:8px;padding:10px 14px;text-align:center;font-size:.8rem;font-weight:600;min-width:80px}
+.lc-arrow{font-size:1.3rem;color:var(--grey)}
+
+/* ── Remember boxes ── */
+.remember{background:var(--lorange);border-left:4px solid var(--orange);padding:8px 12px;border-radius:0 8px 8px 0;font-size:.85rem;color:#4E342E;font-weight:600;margin:10px 0}
+
+/* ── Example box ── */
+.example-box{background:var(--lblue);border-left:4px solid var(--blue);padding:8px 12px;border-radius:0 8px 8px 0;font-size:.85rem;color:#0D47A1;margin:8px 0}
+
+/* ── Syllabus grid ── */
+.unit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin:10px 0}
+.unit-card{background:#fff;border-radius:8px;padding:10px;border:1.5px solid #e0e0e0;font-size:.8rem;transition:box-shadow .2s}
+.unit-card:hover{box-shadow:0 3px 10px rgba(0,0,0,.12);border-color:var(--green)}
+.unit-num{font-weight:700;font-size:.75rem;color:var(--green);margin-bottom:3px}
+.unit-name{font-weight:600;color:var(--dark)}
+.unit-topics{color:var(--grey);font-size:.73rem;margin-top:2px;line-height:1.4}
+
+/* ── Search ── */
+.search-box{width:100%;padding:10px 14px;border:1.5px solid #ccc;border-radius:8px;font-size:.9rem;margin-bottom:14px;outline:none}
+.search-box:focus{border-color:var(--green)}
+
+/* ── Filter chips ── */
+.filter-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.fchip{padding:5px 12px;border-radius:20px;font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid #ddd;background:#fff;color:var(--grey);transition:all .18s}
+.fchip.active,.fchip:hover{background:var(--green);color:#fff;border-color:var(--green)}
+
+/* ── Quiz mode button ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{background:var(--dgreen)}
+.btn-outline{background:#fff;color:var(--green);border:1.5px solid var(--green)}
+.btn-outline:hover{background:var(--lgreen)}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+
+/* ── Responsive ── */
+@media(max-width:480px){
+  header h1{font-size:1.15rem}
+  .tab{padding:10px 11px;font-size:.76rem}
+  .page{padding:12px 10px 28px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌿 Class 4 EVS – Interactive Learning App</h1>
+  <p>Theory Notes • Diagrams • MCQ Quiz • Q&A Practice</p>
+</header>
+
+<nav id="navBar">
+  <div class="tab active" onclick="showPage('syllabus')">📋 Syllabus</div>
+  <div class="tab" onclick="showPage('theory')">📖 Theory</div>
+  <div class="tab" onclick="showPage('diagrams')">🗺️ Diagrams</div>
+  <div class="tab" onclick="showPage('mcq')">✅ MCQ Quiz</div>
+  <div class="tab" onclick="showPage('shortqa')">📝 Short Q&A</div>
+  <div class="tab" onclick="showPage('revision')">⚡ Fast Revision</div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 1 – SYLLABUS
+══════════════════════════════════════════════════════════════ -->
+<div class="page active" id="syllabus">
+  <div class="banner" style="background:var(--dark)">📋 Syllabus – 40 Units at a Glance</div>
+  <input class="search-box" id="unitSearch" placeholder="🔍 Search units or topics…" oninput="filterUnits()"/>
+  <div class="filter-row">
+    <div class="fchip active" onclick="filterGroup(this,'all')">All</div>
+    <div class="fchip" onclick="filterGroup(this,'earth')">🌍 Earth & Space</div>
+    <div class="fchip" onclick="filterGroup(this,'nature')">💧 Air, Water, Weather</div>
+    <div class="fchip" onclick="filterGroup(this,'plants')">🌱 Plants</div>
+    <div class="fchip" onclick="filterGroup(this,'animals')">🐾 Animals</div>
+    <div class="fchip" onclick="filterGroup(this,'human')">🧠 Human & Society</div>
+  </div>
+  <div class="unit-grid" id="unitGrid"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 2 – THEORY NOTES
+══════════════════════════════════════════════════════════════ -->
+<div class="page" id="theory">
+  <div class="banner" style="background:var(--dark)">📖 Theory Notes – All Topics</div>
+  <div class="filter-row" id="theoryFilter"></div>
+  <div id="theoryContent"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 3 – DIAGRAMS
+══════════════════════════════════════════════════════════════ -->
+<div class="page" id="diagrams">
+  <div class="banner" style="background:var(--dark)">🗺️ Key Diagrams for Exam</div>
+
+  <!-- Animal Classification -->
+  <div class="card">
+    <div class="card-header" style="background:var(--green)">🐾 Animal Classification (Based on Food)</div>
+    <div class="card-body">
+      <div class="diag-grid">
+        <div class="diag-box" style="background:var(--lgreen);border:2px solid var(--green)">
+          <span class="icon">🌿</span><span class="label" style="color:var(--dgreen)">Herbivores</span>
+          <span class="sub" style="color:var(--green)">Cow, Goat, Deer,<br>Rabbit, Elephant</span>
+          <div class="chip" style="background:var(--lgreen);color:var(--dgreen);border:1px solid var(--green);margin-top:6px">Plants only</div>
+        </div>
+        <div class="diag-box" style="background:var(--lred);border:2px solid var(--red)">
+          <span class="icon">🍖</span><span class="label" style="color:var(--red)">Carnivores</span>
+          <span class="sub" style="color:var(--red)">Lion, Tiger, Wolf,<br>Leopard, Crocodile</span>
+          <div class="chip" style="background:var(--lred);color:var(--red);border:1px solid var(--red);margin-top:6px">Meat only</div>
+        </div>
+        <div class="diag-box" style="background:var(--lpurple);border:2px solid var(--purple)">
+          <span class="icon">🍎🍖</span><span class="label" style="color:var(--purple)">Omnivores</span>
+          <span class="sub" style="color:var(--purple)">Human, Bear,<br>Crow, Dog</span>
+          <div class="chip" style="background:var(--lpurple);color:var(--purple);border:1px solid var(--purple);margin-top:6px">Plants + Meat</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Habitat Diagram -->
+  <div class="card">
+    <div class="card-header" style="background:var(--teal)">🏠 Animal Habitats (Where Animals Live)</div>
+    <div class="card-body">
+      <div class="diag-grid">
+        <div class="diag-box" style="background:var(--lteal);border:2px solid var(--teal)">
+          <span class="icon">🏠</span><span class="label" style="color:var(--teal)">Domestic</span>
+          <span class="sub" style="color:var(--teal)">Dog, Cat, Cow,<br>Goat, Horse</span>
+          <div class="chip" style="background:var(--lteal);color:var(--teal);border:1px solid var(--teal);margin-top:5px">Lives with humans</div>
+        </div>
+        <div class="diag-box" style="background:var(--lgreen);border:2px solid var(--green)">
+          <span class="icon">🌳</span><span class="label" style="color:var(--dgreen)">Wild</span>
+          <span class="sub" style="color:var(--green)">Tiger, Lion,<br>Elephant, Bear</span>
+          <div class="chip" style="background:var(--lgreen);color:var(--dgreen);border:1px solid var(--green);margin-top:5px">Lives in forests</div>
+        </div>
+        <div class="diag-box" style="background:var(--lblue);border:2px solid var(--blue)">
+          <span class="icon">🐟</span><span class="label" style="color:var(--blue)">Water</span>
+          <span class="sub" style="color:var(--blue)">Fish, Whale,<br>Dolphin, Shark</span>
+          <div class="chip" style="background:var(--lblue);color:var(--blue);border:1px solid var(--blue);margin-top:5px">Lives in water</div>
+        </div>
+        <div class="diag-box" style="background:var(--lamber);border:2px solid var(--amber)">
+          <span class="icon">🐸</span><span class="label" style="color:var(--amber)">Amphibians</span>
+          <span class="sub" style="color:#5D4037">Frog, Toad,<br>Salamander</span>
+          <div class="chip" style="background:var(--lamber);color:var(--amber);border:1px solid var(--amber);margin-top:5px">Land + Water</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Butterfly Life Cycle -->
+  <div class="card">
+    <div class="card-header" style="background:var(--purple)">🦋 Butterfly Life Cycle (4 Stages)</div>
+    <div class="card-body">
+      <div class="lifecycle">
+        <div class="lc-step" style="background:var(--lgreen);color:var(--dgreen);border:2px solid var(--green)">🥚<br>1. EGG<br><small>Laid on leaf</small></div>
+        <div class="lc-arrow">→</div>
+        <div class="lc-step" style="background:var(--lblue);color:var(--blue);border:2px solid var(--blue)">🐛<br>2. LARVA<br><small>Caterpillar</small></div>
+        <div class="lc-arrow">→</div>
+        <div class="lc-step" style="background:var(--lorange);color:var(--orange);border:2px solid var(--orange)">🫘<br>3. PUPA<br><small>Chrysalis</small></div>
+        <div class="lc-arrow">→</div>
+        <div class="lc-step" style="background:var(--lpurple);color:var(--purple);border:2px solid var(--purple)">🦋<br>4. BUTTERFLY<br><small>Adult</small></div>
+      </div>
+      <div class="remember">✔ 4 stages: Egg → Larva (Caterpillar) → Pupa (Chrysalis) → Adult Butterfly. This change is called Metamorphosis.</div>
+    </div>
+  </div>
+
+  <!-- Earth Layers -->
+  <div class="card">
+    <div class="card-header" style="background:var(--orange)">🌍 Layers of the Earth</div>
+    <div class="card-body">
+      <div class="diag-grid">
+        <div class="diag-box" style="background:#E8F5E9;border:2px solid #4CAF50">
+          <span class="icon">🌿</span><span class="label" style="color:#2E7D32">CRUST</span>
+          <span class="sub" style="color:#388E3C">Outermost layer<br>We live here<br>(thinnest)</span>
+        </div>
+        <div class="diag-box" style="background:#FFF3E0;border:2px solid #FF9800">
+          <span class="icon">🔥</span><span class="label" style="color:#E65100">MANTLE</span>
+          <span class="sub" style="color:#BF360C">Middle layer<br>Hot melted rock<br>(thickest)</span>
+        </div>
+        <div class="diag-box" style="background:#FFEBEE;border:2px solid #F44336">
+          <span class="icon">♨️</span><span class="label" style="color:#C62828">CORE</span>
+          <span class="sub" style="color:#B71C1C">Innermost layer<br>Hottest centre<br>(solid + liquid)</span>
+        </div>
+      </div>
+      <div class="remember">✔ 3 layers from outside: Crust → Mantle → Core. We live on the Crust.</div>
+    </div>
+  </div>
+
+  <!-- Solar System -->
+  <div class="card">
+    <div class="card-header" style="background:var(--blue)">🌞 The Solar System</div>
+    <div class="card-body">
+      <div style="overflow-x:auto">
+        <table class="tbl">
+          <tr><th>Order</th><th>Planet</th><th>Key Fact</th></tr>
+          <tr><td>1st</td><td>☿ Mercury</td><td>Nearest to Sun; smallest planet</td></tr>
+          <tr><td>2nd</td><td>♀ Venus</td><td>Hottest planet</td></tr>
+          <tr><td>3rd</td><td>🌍 <b>Earth</b></td><td><b>Our home – only planet with life</b></td></tr>
+          <tr><td>4th</td><td>♂ Mars</td><td>Red Planet</td></tr>
+          <tr><td>5th</td><td>♃ Jupiter</td><td>Largest planet</td></tr>
+          <tr><td>6th</td><td>♄ Saturn</td><td>Has rings</td></tr>
+          <tr><td>7th</td><td>♅ Uranus</td><td>Rotates on its side</td></tr>
+          <tr><td>8th</td><td>♆ Neptune</td><td>Farthest from Sun</td></tr>
+        </table>
+      </div>
+      <div class="remember">✔ My Very Educated Mother Just Served Us Noodles → Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune</div>
+    </div>
+  </div>
+
+  <!-- Water Cycle -->
+  <div class="card">
+    <div class="card-header" style="background:var(--blue)">💧 The Water Cycle</div>
+    <div class="card-body">
+      <div class="lifecycle" style="flex-direction:column;align-items:flex-start;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="lc-step" style="background:var(--lorange);color:var(--orange);border:2px solid var(--orange);min-width:130px">☀️ EVAPORATION<br><small>Sun heats water → steam rises</small></div>
+          <span style="color:var(--grey);font-size:.82rem">Water from rivers, lakes & seas turns into water vapour and goes up</span>
+        </div>
+        <div style="color:var(--grey);margin-left:65px;font-size:1.3rem">↓</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="lc-step" style="background:var(--lblue);color:var(--blue);border:2px solid var(--blue);min-width:130px">☁️ CONDENSATION<br><small>Vapour forms clouds</small></div>
+          <span style="color:var(--grey);font-size:.82rem">Water vapour cools and forms tiny droplets which make clouds</span>
+        </div>
+        <div style="color:var(--grey);margin-left:65px;font-size:1.3rem">↓</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="lc-step" style="background:var(--lgreen);color:var(--dgreen);border:2px solid var(--green);min-width:130px">🌧️ RAINFALL<br><small>Rain falls to ground</small></div>
+          <span style="color:var(--grey);font-size:.82rem">Clouds get heavy and water falls back as rain, snow or hail</span>
+        </div>
+      </div>
+      <div class="remember">✔ Evaporation → Condensation → Rainfall → back to rivers/sea (cycle repeats!)</div>
+    </div>
+  </div>
+
+  <!-- Sense Organs -->
+  <div class="card">
+    <div class="card-header" style="background:var(--purple)">🧠 The Five Sense Organs</div>
+    <div class="card-body">
+      <div class="diag-grid" style="grid-template-columns:repeat(5,1fr)">
+        <div class="diag-box" style="background:var(--lblue);border:2px solid var(--blue)">
+          <span class="icon">👁️</span><span class="label" style="color:var(--blue)">EYE</span>
+          <span class="sub" style="color:var(--blue)">Helps us<br>SEE</span>
+        </div>
+        <div class="diag-box" style="background:var(--lgreen);border:2px solid var(--green)">
+          <span class="icon">👂</span><span class="label" style="color:var(--dgreen)">EAR</span>
+          <span class="sub" style="color:var(--green)">Helps us<br>HEAR</span>
+        </div>
+        <div class="diag-box" style="background:var(--lorange);border:2px solid var(--orange)">
+          <span class="icon">👃</span><span class="label" style="color:var(--orange)">NOSE</span>
+          <span class="sub" style="color:var(--orange)">Helps us<br>SMELL</span>
+        </div>
+        <div class="diag-box" style="background:var(--lred);border:2px solid var(--red)">
+          <span class="icon">👅</span><span class="label" style="color:var(--red)">TONGUE</span>
+          <span class="sub" style="color:var(--red)">Helps us<br>TASTE</span>
+        </div>
+        <div class="diag-box" style="background:var(--lteal);border:2px solid var(--teal)">
+          <span class="icon">✋</span><span class="label" style="color:var(--teal)">SKIN</span>
+          <span class="sub" style="color:var(--teal)">Helps us<br>TOUCH</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bird Homes -->
+  <div class="card">
+    <div class="card-header" style="background:var(--teal)">🐦 Birds and Their Homes</div>
+    <div class="card-body">
+      <div class="diag-grid">
+        <div class="diag-box" style="background:var(--lgreen);border:2px solid var(--green)"><span class="icon">🐦</span><span class="label" style="color:var(--dgreen)">Sparrow</span><span class="sub" style="color:var(--green)">Nest (tree twigs)</span></div>
+        <div class="diag-box" style="background:var(--lblue);border:2px solid var(--blue)"><span class="icon">🐦</span><span class="label" style="color:var(--blue)">Pigeon</span><span class="sub" style="color:var(--blue)">Nest</span></div>
+        <div class="diag-box" style="background:var(--lorange);border:2px solid var(--orange)"><span class="icon">🦅</span><span class="label" style="color:var(--orange)">Eagle</span><span class="sub" style="color:var(--orange)">Eyrie (high cliff)</span></div>
+        <div class="diag-box" style="background:var(--lpurple);border:2px solid var(--purple)"><span class="icon">🦉</span><span class="label" style="color:var(--purple)">Owl</span><span class="sub" style="color:var(--purple)">Tree Hollow</span></div>
+        <div class="diag-box" style="background:var(--lteal);border:2px solid var(--teal)"><span class="icon">🦚</span><span class="label" style="color:var(--teal)">Peacock</span><span class="sub" style="color:var(--teal)">Open ground</span></div>
+        <div class="diag-box" style="background:var(--lred);border:2px solid var(--red)"><span class="icon">🦜</span><span class="label" style="color:var(--red)">Parrot</span><span class="sub" style="color:var(--red)">Tree Hollow</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 4 – MCQ QUIZ
+══════════════════════════════════════════════════════════════ -->
+<div class="page" id="mcq">
+  <div class="banner" style="background:var(--blue)">✅ MCQ Quiz – 50 Questions</div>
+  <div class="mcq-score-bar">
+    <div class="score-circle">
+      <span class="score-big" id="scoreNum">0</span>
+      <span>/50</span>
+    </div>
+    <div style="flex:1">
+      <div style="font-weight:600;margin-bottom:6px">Score: <span id="scoreLabel">0 / 50</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+      <div style="font-size:.78rem;color:var(--grey);margin-top:4px" id="answeredCount">0 answered</div>
+    </div>
+    <div class="btn-row" style="margin:0">
+      <button class="btn btn-outline" onclick="resetMCQ()">🔄 Reset</button>
+      <button class="btn btn-green" onclick="revealAllMCQ()">👁 Reveal All</button>
+    </div>
+  </div>
+  <div id="mcqContainer"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 5 – SHORT Q&A
+══════════════════════════════════════════════════════════════ -->
+<div class="page" id="shortqa">
+  <div class="banner" style="background:var(--purple)">📝 Short Questions & Answers (Q51–Q100)</div>
+  <input class="search-box" id="qaSearch" placeholder="🔍 Search questions…" oninput="filterQA()"/>
+  <div class="btn-row">
+    <button class="btn btn-green" onclick="expandAllQA()">📖 Expand All</button>
+    <button class="btn btn-outline" onclick="collapseAllQA()">📕 Collapse All</button>
+  </div>
+  <div id="qaContainer"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 6 – FAST REVISION
+══════════════════════════════════════════════════════════════ -->
+<div class="page" id="revision">
+  <div class="banner" style="background:var(--orange)">⚡ Super Fast Revision</div>
+
+  <div class="card">
+    <div class="card-header" style="background:var(--green)">🐄 Animal Types – Quick Facts</div>
+    <div class="card-body">
+      <table class="tbl">
+        <tr><th>Animal / Thing</th><th>Type</th><th>Key Fact</th></tr>
+        <tr><td>Cow</td><td><span class="chip" style="background:var(--lgreen);color:var(--dgreen)">Herbivore</span></td><td>Eats grass → Gives milk</td></tr>
+        <tr><td>Lion</td><td><span class="chip" style="background:var(--lred);color:var(--red)">Carnivore</span></td><td>Eats meat → King of Jungle</td></tr>
+        <tr><td>Human</td><td><span class="chip" style="background:var(--lpurple);color:var(--purple)">Omnivore</span></td><td>Eats plants & meat</td></tr>
+        <tr><td>Dog</td><td><span class="chip" style="background:var(--lteal);color:var(--teal)">Domestic</span></td><td>Kennel → Guards home</td></tr>
+        <tr><td>Tiger</td><td><span class="chip" style="background:var(--lgreen);color:var(--dgreen)">Wild</span></td><td>National Animal of India</td></tr>
+        <tr><td>Fish</td><td><span class="chip" style="background:var(--lblue);color:var(--blue)">Water</span></td><td>Lives in water → Has gills</td></tr>
+        <tr><td>Frog</td><td><span class="chip" style="background:var(--lamber);color:var(--amber)">Amphibian</span></td><td>Lives on land + water</td></tr>
+        <tr><td>Sparrow</td><td><span class="chip" style="background:var(--lteal);color:var(--teal)">Bird</span></td><td>Builds nest on trees</td></tr>
+        <tr><td>Sheep</td><td><span class="chip" style="background:var(--lteal);color:var(--teal)">Domestic</span></td><td>Gives wool</td></tr>
+        <tr><td>Bee</td><td><span class="chip" style="background:var(--lamber);color:var(--amber)">Insect</span></td><td>Makes honey</td></tr>
+        <tr><td>Peacock</td><td><span class="chip" style="background:var(--lpurple);color:var(--purple)">Nat. Bird</span></td><td>National Bird of India</td></tr>
+        <tr><td>Camel</td><td><span class="chip" style="background:var(--lorange);color:var(--orange)">Wild/Dom.</span></td><td>Ship of the Desert</td></tr>
+        <tr><td>Whale</td><td><span class="chip" style="background:var(--lblue);color:var(--blue)">Water</span></td><td>Largest animal on Earth</td></tr>
+        <tr><td>Parrot</td><td><span class="chip" style="background:var(--lteal);color:var(--teal)">Bird</span></td><td>Mimics human speech</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:var(--purple)">🏠 Animal Homes</div>
+    <div class="card-body">
+      <div class="diag-grid" style="grid-template-columns:repeat(auto-fill,minmax(110px,1fr))">
+        <div class="diag-box" style="background:var(--lred);border:1.5px solid var(--red)"><span class="icon">🦁</span><b style="color:var(--red)">Lion</b><span class="sub">Den</span></div>
+        <div class="diag-box" style="background:var(--lgreen);border:1.5px solid var(--green)"><span class="icon">🐎</span><b style="color:var(--dgreen)">Horse</b><span class="sub">Stable</span></div>
+        <div class="diag-box" style="background:var(--lteal);border:1.5px solid var(--teal)"><span class="icon">🐕</span><b style="color:var(--teal)">Dog</b><span class="sub">Kennel</span></div>
+        <div class="diag-box" style="background:var(--lpurple);border:1.5px solid var(--purple)"><span class="icon">🐰</span><b style="color:var(--purple)">Rabbit</b><span class="sub">Burrow</span></div>
+        <div class="diag-box" style="background:var(--lblue);border:1.5px solid var(--blue)"><span class="icon">🐦</span><b style="color:var(--blue)">Bird</b><span class="sub">Nest</span></div>
+        <div class="diag-box" style="background:var(--lamber);border:1.5px solid var(--amber)"><span class="icon">🐄</span><b style="color:var(--amber)">Cow</b><span class="sub">Shed</span></div>
+        <div class="diag-box" style="background:var(--lgreen);border:1.5px solid var(--green)"><span class="icon">🐝</span><b style="color:var(--dgreen)">Bee</b><span class="sub">Beehive</span></div>
+        <div class="diag-box" style="background:var(--lred);border:1.5px solid var(--red)"><span class="icon">🐷</span><b style="color:var(--red)">Pig</b><span class="sub">Sty</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:var(--teal)">🇮🇳 National Symbols of India</div>
+    <div class="card-body">
+      <div class="diag-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">
+        <div class="diag-box" style="background:var(--lorange);border:2px solid var(--orange)"><span class="icon">🐯</span><span class="label" style="color:var(--orange)">National Animal</span><span class="sub">Tiger (Bengal Tiger)</span></div>
+        <div class="diag-box" style="background:var(--lpurple);border:2px solid var(--purple)"><span class="icon">🦚</span><span class="label" style="color:var(--purple)">National Bird</span><span class="sub">Peacock</span></div>
+        <div class="diag-box" style="background:var(--lgreen);border:2px solid var(--green)"><span class="icon">🌸</span><span class="label" style="color:var(--dgreen)">National Flower</span><span class="sub">Lotus</span></div>
+        <div class="diag-box" style="background:var(--lred);border:2px solid var(--red)"><span class="icon">🌳</span><span class="label" style="color:var(--red)">National Tree</span><span class="sub">Banyan Tree</span></div>
+        <div class="diag-box" style="background:var(--lblue);border:2px solid var(--blue)"><span class="icon">🏏</span><span class="label" style="color:var(--blue)">National Sport</span><span class="sub">Hockey</span></div>
+        <div class="diag-box" style="background:var(--lteal);border:2px solid var(--teal)"><span class="icon">🐬</span><span class="label" style="color:var(--teal)">National Aquatic</span><span class="sub">River Dolphin</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:var(--blue)">🔑 Key One-Liners to Remember</div>
+    <div class="card-body">
+      <div style="display:grid;gap:8px">
+        <div class="remember">✔ Herbivores = Plant Eaters | Carnivores = Meat Eaters | Omnivores = Both</div>
+        <div class="remember">✔ Amphibians = Live on Land AND Water (Frog, Toad, Salamander)</div>
+        <div class="remember">✔ Photosynthesis: Sunlight + Water + CO₂ → Food + Oxygen (happens in Leaves)</div>
+        <div class="remember">✔ Water Cycle: Evaporation → Condensation → Rainfall</div>
+        <div class="remember">✔ 3 Earth Layers: Crust (outside) → Mantle (middle) → Core (centre)</div>
+        <div class="remember">✔ 8 Planets: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune</div>
+        <div class="remember">✔ 5 Sense Organs: Eye (See), Ear (Hear), Nose (Smell), Tongue (Taste), Skin (Touch)</div>
+        <div class="remember">✔ Butterfly: Egg → Larva → Pupa → Adult (4 stages = Metamorphosis)</div>
+        <div class="remember">✔ 3 Seasons in India: Summer (hot), Rainy (monsoon), Winter (cold)</div>
+        <div class="remember">✔ National Animal = Tiger | National Bird = Peacock | National Flower = Lotus</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════
+
+const UNITS=[
+  {n:1,name:"Our Earth",topics:"Earth, Globe, Continents, Oceans, Earth as a Planet",group:"earth"},
+  {n:2,name:"Layers of Earth",topics:"Crust, Mantle, Core, Importance of Layers",group:"earth"},
+  {n:3,name:"Solar System",topics:"Sun, Moon, Stars, Planets, Day and Night",group:"earth"},
+  {n:4,name:"Air Around Us",topics:"Importance of Air, Oxygen, Wind, Uses of Air",group:"nature"},
+  {n:5,name:"Water",topics:"Sources of Water, Uses of Water, Water Conservation",group:"nature"},
+  {n:6,name:"Water Cycle",topics:"Evaporation, Condensation, Rainfall",group:"nature"},
+  {n:7,name:"Weather and Seasons",topics:"Summer, Rainy, Winter Seasons",group:"nature"},
+  {n:8,name:"Plants Around Us",topics:"Herbs, Shrubs, Trees, Climbers, Creepers",group:"plants"},
+  {n:9,name:"Parts of Plants",topics:"Root, Stem, Leaves, Flowers, Fruits, Seeds",group:"plants"},
+  {n:10,name:"Plant Life Cycle",topics:"Seed Germination, Growth of Plants",group:"plants"},
+  {n:11,name:"Photosynthesis",topics:"Food Making Process in Plants",group:"plants"},
+  {n:12,name:"Uses of Plants",topics:"Food, Medicine, Wood, Oxygen",group:"plants"},
+  {n:13,name:"Animals Around Us",topics:"Domestic Animals, Wild Animals",group:"animals"},
+  {n:14,name:"Water Animals",topics:"Fish, Whale, Dolphin, Octopus",group:"animals"},
+  {n:15,name:"Land Animals",topics:"Lion, Tiger, Elephant, Deer",group:"animals"},
+  {n:16,name:"Amphibians",topics:"Frog, Toad",group:"animals"},
+  {n:17,name:"Birds",topics:"Types of Birds, Nest Building",group:"animals"},
+  {n:18,name:"Insects",topics:"Butterfly, Ant, Bee, Mosquito",group:"animals"},
+  {n:19,name:"Butterfly Life Cycle",topics:"Egg, Caterpillar, Pupa, Adult Butterfly",group:"animals"},
+  {n:20,name:"Food Habits of Animals",topics:"Herbivores, Carnivores, Omnivores",group:"animals"},
+  {n:21,name:"Animal Homes",topics:"Nest, Den, Burrow, Stable, Kennel",group:"animals"},
+  {n:22,name:"Animal Products",topics:"Milk, Wool, Honey, Eggs, Silk",group:"animals"},
+  {n:23,name:"Human Body",topics:"Body Parts and Functions",group:"human"},
+  {n:24,name:"Sense Organs",topics:"Eyes, Ears, Nose, Tongue, Skin",group:"human"},
+  {n:25,name:"Food and Nutrition",topics:"Healthy Food, Balanced Diet",group:"human"},
+  {n:26,name:"Personal Hygiene",topics:"Cleanliness, Hand Washing, Bathing",group:"human"},
+  {n:27,name:"Family",topics:"Types of Families, Family Members",group:"human"},
+  {n:28,name:"Community Helpers",topics:"Doctor, Teacher, Farmer, Police, Postman",group:"human"},
+  {n:29,name:"Houses",topics:"Kutcha, Pucca, Temporary House",group:"human"},
+  {n:30,name:"Clothes",topics:"Seasonal Clothes, Importance of Clothes",group:"human"},
+  {n:31,name:"Transport",topics:"Land, Water, Air Transport",group:"human"},
+  {n:32,name:"Communication",topics:"Letter, Telephone, Mobile, Internet",group:"human"},
+  {n:33,name:"Safety Rules",topics:"Road Safety, Home Safety, School Safety",group:"human"},
+  {n:34,name:"Festivals",topics:"National, Religious, Harvest Festivals",group:"human"},
+  {n:35,name:"Natural Resources",topics:"Air, Water, Soil, Forests",group:"nature"},
+  {n:36,name:"Pollution",topics:"Air Pollution, Water Pollution, Noise Pollution",group:"nature"},
+  {n:37,name:"Conservation",topics:"Save Water, Save Trees, Save Animals",group:"nature"},
+  {n:38,name:"India and Symbols",topics:"National Animal, Bird, Flower, Flag",group:"human"},
+  {n:39,name:"Maps and Directions",topics:"North, South, East, West",group:"human"},
+  {n:40,name:"Good Habits",topics:"Discipline, Respect, Helping Others",group:"human"},
+];
+
+const GROUP_COLORS={earth:"var(--blue)",nature:"var(--teal)",plants:"var(--green)",animals:"var(--orange)",human:"var(--purple)"};
+
+// Theory sections
+const THEORY_SECTIONS=[
+  {id:"food",label:"🍎 Food Types",color:"var(--green)",content:`
+<div class="card"><div class="card-header" style="background:var(--green)">1. Herbivores – Plant Eaters</div><div class="card-body">
+<p>Herbivores are animals that eat <b>only plants</b> – grass, leaves, fruits, vegetables, and seeds. They have flat teeth to grind plants.</p>
+<div class="example-box">📌 Examples: Cow, Goat, Deer, Rabbit, Elephant, Horse, Giraffe, Sheep</div>
+<div class="remember">✔ Herbivores = Plant Eaters only</div>
+</div></div>
+<div class="card"><div class="card-header" style="background:var(--red)">2. Carnivores – Meat Eaters</div><div class="card-body">
+<p>Carnivores are animals that eat the <b>flesh (meat) of other animals</b>. They have sharp teeth and claws to hunt prey.</p>
+<div class="example-box">📌 Examples: Lion, Tiger, Leopard, Wolf, Crocodile, Eagle, Shark</div>
+<div class="remember">✔ Carnivores = Meat Eaters only</div>
+</div></div>
+<div class="card"><div class="card-header" style="background:var(--purple)">3. Omnivores – Both Plant & Meat Eaters</div><div class="card-body">
+<p>Omnivores are animals that eat <b>both plants and animals</b>. They can digest both types of food.</p>
+<div class="example-box">📌 Examples: Human, Bear, Crow, Dog, Cat, Rat, Monkey, Pig</div>
+<div class="remember">✔ Omnivores = Plants + Meat (Both!)</div>
+</div></div>`},
+  {id:"habitat",label:"🏠 Habitats",color:"var(--teal)",content:`
+<div class="card"><div class="card-header" style="background:var(--teal)">4. Domestic Animals</div><div class="card-body">
+<p>Domestic animals are animals that are <b>kept and cared for by humans</b> at home or on farms.</p>
+<div class="example-box">📌 Examples: Cow, Dog, Cat, Goat, Horse, Sheep, Hen, Buffalo</div>
+<table class="tbl" style="margin-top:10px"><tr><th>Animal</th><th>What It Gives Us</th></tr>
+<tr><td>Cow</td><td>Milk, dung (manure)</td></tr>
+<tr><td>Sheep</td><td>Wool for making clothes</td></tr>
+<tr><td>Horse</td><td>Riding & transport</td></tr>
+<tr><td>Dog</td><td>Guards our house</td></tr>
+<tr><td>Hen</td><td>Eggs and meat</td></tr>
+<tr><td>Goat</td><td>Milk and meat</td></tr></table>
+</div></div>
+<div class="card"><div class="card-header" style="background:var(--green)">5. Wild Animals</div><div class="card-body">
+<p>Wild animals live in <b>forests, jungles, grasslands, or deserts</b>. They find their own food and are NOT kept as pets.</p>
+<div class="example-box">📌 Examples: Tiger, Lion, Elephant, Leopard, Bear, Fox, Wolf, Giraffe</div>
+<div class="remember">✔ Wild animals live in forests – NOT with humans!</div>
+</div></div>
+<div class="card"><div class="card-header" style="background:var(--blue)">6. Water Animals (Aquatic)</div><div class="card-body">
+<p>Water animals (aquatic animals) live in water – oceans, rivers, lakes, or ponds. They have gills or fins to survive.</p>
+<div class="example-box">📌 Examples: Fish, Dolphin, Whale, Octopus, Shark, Crab, Turtle, Starfish</div>
+<div class="remember">✔ Aquatic = Water Animals</div>
+</div></div>
+<div class="card"><div class="card-header" style="background:var(--amber)">7. Amphibians – Land & Water</div><div class="card-body">
+<p>Amphibians can <b>live both on land and in water</b>. They are born in water and move to land as adults. Young ones breathe through gills; adults breathe through lungs and skin.</p>
+<div class="example-box">📌 Examples: Frog, Toad, Salamander, Newt</div>
+<div class="remember">✔ Amphibians = Land + Water (Both!)</div>
+</div></div>`},
+  {id:"birds",label:"🐦 Birds",color:"var(--purple)",content:`
+<div class="card"><div class="card-header" style="background:var(--purple)">8. Birds and Their Homes</div><div class="card-body">
+<p>Birds have wings, feathers, and lay eggs. They build <b>nests</b> to lay eggs and protect their young ones from rain and enemies.</p>
+<table class="tbl" style="margin-top:8px">
+<tr><th>Bird</th><th>Home</th><th>Special Feature</th></tr>
+<tr><td>Sparrow</td><td>Nest</td><td>Common garden bird; makes nest of twigs</td></tr>
+<tr><td>Pigeon</td><td>Nest</td><td>Can find its way home from far distances</td></tr>
+<tr><td>Crow</td><td>Nest</td><td>Very intelligent; eats almost anything (omnivore)</td></tr>
+<tr><td>Eagle</td><td>Eyrie</td><td>Builds nest on high cliffs or tall trees</td></tr>
+<tr><td>Owl</td><td>Tree Hollow</td><td>Active at night (nocturnal)</td></tr>
+<tr><td>Peacock</td><td>Open areas</td><td>National Bird of India; beautiful feathers</td></tr>
+<tr><td>Parrot</td><td>Tree Hollow</td><td>Can mimic human speech</td></tr>
+<tr><td>Penguin</td><td>Ground burrow</td><td>Cannot fly; uses wings to swim</td></tr>
+</table>
+<div class="remember">✔ Birds build nests to lay eggs and protect their young ones.</div>
+</div></div>`},
+  {id:"earth",label:"🌍 Earth & Space",color:"var(--blue)",content:`
+<div class="card"><div class="card-header" style="background:var(--blue)">Unit 1 – Our Earth</div><div class="card-body">
+<p><b>Earth</b> is the third planet from the Sun and the only planet known to have life. It is called the <b>Blue Planet</b> because 71% of its surface is covered by water.</p>
+<div class="example-box">📌 7 Continents: Asia, Africa, North America, South America, Europe, Australia, Antarctica</div>
+<div class="example-box">📌 5 Oceans: Pacific, Atlantic, Indian, Arctic, Southern</div>
+<div class="remember">✔ Earth = Blue Planet = 3rd Planet from Sun = Only planet with life</div>
+</div></div>
+<div class="card"><div class="card-header" style="background:var(--orange)">Unit 2 – Layers of Earth</div><div class="card-body">
+<p>Earth has <b>3 layers</b>:</p>
+<div class="example-box">🌿 <b>Crust</b> – Outermost, thinnest layer. We live here. Made of rocks and soil.</div>
+<div class="example-box">🔥 <b>Mantle</b> – Middle layer. Made of hot semi-liquid rock called magma. Thickest layer.</div>
+<div class="example-box">♨️ <b>Core</b> – Innermost layer. Hottest part. Made of iron and nickel.</div>
+<div class="remember">✔ Crust (outside) → Mantle (middle) → Core (centre/hottest)</div>
+</div></div>
+<div class="card"><div class="card-header" style="background:var(--dark)">Unit 3 – Solar System</div><div class="card-body">
+<p>The Solar System has the <b>Sun at the centre</b> and 8 planets orbiting around it.</p>
+<div class="example-box">📌 Order: Mercury → Venus → Earth → Mars → Jupiter → Saturn → Uranus → Neptune</div>
+<div class="remember">✔ Mnemonic: My Very Educated Mother Just Served Us Noodles</div>
+<div class="remember">✔ Sun = nearest star to Earth | Moon = Earth's natural satellite</div>
+</div></div>`},
+  {id:"plants",label:"🌱 Plants",color:"var(--green)",content:`
+<div class="card"><div class="card-header" style="background:var(--green)">Units 8-12 – Plants</div><div class="card-body">
+<p><b>Types of Plants:</b></p>
+<div class="example-box">🌿 <b>Herbs</b> – Small, soft stem (Tulsi, Mint, Coriander)</div>
+<div class="example-box">🌿 <b>Shrubs</b> – Medium, woody stem (Rose, Hibiscus)</div>
+<div class="example-box">🌳 <b>Trees</b> – Tall, hard, thick trunk (Mango, Banyan, Neem)</div>
+<div class="example-box">🍃 <b>Climbers</b> – Climb with support (Money Plant, Pea)</div>
+<div class="example-box">🍃 <b>Creepers</b> – Creep on ground (Watermelon, Pumpkin)</div>
+</div></div>
+<div class="card"><div class="card-header" style="background:var(--teal)">Parts of a Plant</div><div class="card-body">
+<table class="tbl"><tr><th>Part</th><th>Function</th></tr>
+<tr><td>Root</td><td>Absorbs water & minerals; holds plant in soil</td></tr>
+<tr><td>Stem</td><td>Carries water from root to leaves; supports plant</td></tr>
+<tr><td>Leaf</td><td>Makes food (photosynthesis); green due to chlorophyll</td></tr>
+<tr><td>Flower</td><td>Reproduction; attracts insects for pollination</td></tr>
+<tr><td>Fruit</td><td>Contains seeds; we eat many fruits</td></tr>
+<tr><td>Seed</td><td>Grows into a new plant</td></tr></table>
+</div></div>
+<div class="card"><div class="card-header" style="background:var(--purple)">Photosynthesis</div><div class="card-body">
+<p>Photosynthesis is the process by which plants make their own food using sunlight.</p>
+<div style="text-align:center;padding:12px;background:var(--lgreen);border-radius:8px;font-weight:700;margin:10px 0">
+  Sunlight + Water + Carbon Dioxide → Glucose (food) + Oxygen
+</div>
+<div class="remember">✔ Leaves make food. Chlorophyll (green colour in leaves) captures sunlight.</div>
+<div class="remember">✔ Plants release Oxygen → we breathe it in. Plants take in CO₂ → we breathe it out.</div>
+</div></div>`},
+  {id:"water",label:"💧 Water & Air",color:"var(--blue)",content:`
+<div class="card"><div class="card-header" style="background:var(--blue)">Unit 4 – Air Around Us</div><div class="card-body">
+<p>Air is a mixture of gases. It is all around us and is <b>essential for life</b>.</p>
+<div class="example-box">📌 Air = Oxygen (21%) + Nitrogen (78%) + other gases (1%)</div>
+<div class="example-box">📌 Humans breathe IN oxygen and breathe OUT carbon dioxide.</div>
+<div class="example-box">📌 Plants take IN carbon dioxide and release oxygen (photosynthesis).</div>
+<div class="remember">✔ Air is needed for breathing, burning, flying, and the water cycle.</div>
+</div></div>
+<div class="card"><div class="card-header" style="background:var(--teal)">Unit 5 – Water</div><div class="card-body">
+<p>Water is <b>essential for all living things</b>. About 70% of Earth's surface and 70% of our body is water.</p>
+<div class="example-box">📌 Natural Sources: Rain, Rivers, Lakes, Ponds, Wells, Glaciers, Oceans</div>
+<div class="example-box">📌 Uses: Drinking, Cooking, Bathing, Farming, Industries</div>
+<div class="remember">✔ Save water: close taps, use wisely, rainwater harvesting.</div>
+</div></div>
+<div class="card"><div class="card-header" style="background:var(--orange)">Unit 6 – Water Cycle</div><div class="card-body">
+<p>The water cycle shows how water moves continuously between land and sky.</p>
+<div class="example-box">☀️ <b>Evaporation</b> – Sun heats water → turns into water vapour → rises up</div>
+<div class="example-box">☁️ <b>Condensation</b> – Water vapour cools → forms clouds</div>
+<div class="example-box">🌧️ <b>Rainfall (Precipitation)</b> – Clouds get heavy → rain/snow falls back to Earth</div>
+<div class="remember">✔ Water Cycle: Evaporation → Condensation → Rainfall (keeps repeating)</div>
+</div></div>
+<div class="card"><div class="card-header" style="background:var(--red)">Unit 36 – Pollution</div><div class="card-body">
+<p>Pollution means making our natural environment dirty and harmful.</p>
+<table class="tbl"><tr><th>Type</th><th>Cause</th><th>Effect</th></tr>
+<tr><td>Air Pollution</td><td>Smoke from vehicles & factories</td><td>Breathing problems</td></tr>
+<tr><td>Water Pollution</td><td>Waste dumped in rivers</td><td>Unsafe drinking water</td></tr>
+<tr><td>Noise Pollution</td><td>Loud sounds from vehicles</td><td>Hearing problems</td></tr></table>
+<div class="remember">✔ Plant trees, avoid burning waste, save water to reduce pollution.</div>
+</div></div>`},
+  {id:"human",label:"🧠 Human Body",color:"var(--purple)",content:`
+<div class="card"><div class="card-header" style="background:var(--purple)">Unit 24 – Five Sense Organs</div><div class="card-body">
+<table class="tbl"><tr><th>Organ</th><th>Sense</th><th>How It Works</th></tr>
+<tr><td>👁️ Eye</td><td>See</td><td>Detects light; sends signals to brain for vision</td></tr>
+<tr><td>👂 Ear</td><td>Hear</td><td>Collects sound waves; sends to brain</td></tr>
+<tr><td>👃 Nose</td><td>Smell</td><td>Detects smells; also helps in breathing</td></tr>
+<tr><td>👅 Tongue</td><td>Taste</td><td>Taste buds detect sweet, sour, salty, bitter</td></tr>
+<tr><td>✋ Skin</td><td>Touch</td><td>Feels heat, cold, pain, pressure, texture</td></tr></table>
+<div class="remember">✔ 5 Sense Organs = Eyes, Ears, Nose, Tongue, Skin</div>
+</div></div>
+<div class="card"><div class="card-header" style="background:var(--orange)">Unit 25 – Food and Nutrition</div><div class="card-body">
+<p>We need a <b>balanced diet</b> – food that contains all nutrients in the right amount.</p>
+<div class="example-box">📌 Carbohydrates (energy): Rice, Bread, Potato</div>
+<div class="example-box">📌 Proteins (growth): Dal, Eggs, Milk, Fish</div>
+<div class="example-box">📌 Vitamins & Minerals (protection): Fruits, Vegetables</div>
+<div class="example-box">📌 Fats (energy store): Butter, Oil, Nuts</div>
+<div class="remember">✔ Eat fruits & vegetables daily. Avoid junk food like chips and candy.</div>
+</div></div>
+<div class="card"><div class="card-header" style="background:var(--teal)">Unit 26 – Personal Hygiene</div><div class="card-body">
+<div class="example-box">📌 Wash hands before eating and after using the toilet</div>
+<div class="example-box">📌 Brush teeth twice daily – morning and night</div>
+<div class="example-box">📌 Bathe daily; keep nails and hair clean</div>
+<div class="example-box">📌 Drink clean water; eat fresh food</div>
+<div class="remember">✔ Good hygiene keeps us healthy and prevents diseases.</div>
+</div></div>
+<div class="card"><div class="card-header" style="background:var(--red)">Unit 33 – Safety Rules</div><div class="card-body">
+<table class="tbl"><tr><th>Place</th><th>Safety Rules</th></tr>
+<tr><td>Road</td><td>Walk on pavement, use zebra crossing, obey traffic lights</td></tr>
+<tr><td>Home</td><td>Don't touch electric sockets, keep away from fire, no playing near stairs</td></tr>
+<tr><td>School</td><td>Walk quietly in corridors, don't run on stairs, listen to teacher</td></tr></table>
+</div></div>`},
+  {id:"insects",label:"🦋 Insects",color:"var(--amber)",content:`
+<div class="card"><div class="card-header" style="background:var(--amber)">Unit 18 & 19 – Insects & Butterfly Life Cycle</div><div class="card-body">
+<p>Insects have <b>6 legs</b> and usually have wings. They are the most common animals on Earth.</p>
+<div class="example-box">📌 Useful insects: Bee (makes honey), Silkworm (makes silk), Butterfly (pollinates flowers)</div>
+<div class="example-box">📌 Harmful insects: Mosquito (spreads malaria, dengue), Housefly (spreads diseases)</div>
+<div class="remember" style="margin-top:10px">🦋 Butterfly Life Cycle (Metamorphosis):<br>Egg → Larva (Caterpillar) → Pupa (Chrysalis) → Adult Butterfly</div>
+<div class="remember">✔ A caterpillar eats leaves; inside the pupa it transforms into a butterfly. This change is called Metamorphosis.</div>
+</div></div>`},
+  {id:"community",label:"🏘️ Society",color:"var(--dark)",content:`
+<div class="card"><div class="card-header" style="background:var(--dark)">Unit 28 – Community Helpers</div><div class="card-body">
+<table class="tbl"><tr><th>Helper</th><th>What They Do</th></tr>
+<tr><td>Doctor</td><td>Treats sick people; keeps us healthy</td></tr>
+<tr><td>Teacher</td><td>Educates children; builds the future</td></tr>
+<tr><td>Farmer</td><td>Grows food for everyone</td></tr>
+<tr><td>Police</td><td>Keeps law and order; protects citizens</td></tr>
+<tr><td>Postman</td><td>Delivers letters and parcels</td></tr>
+<tr><td>Firefighter</td><td>Puts out fires; rescues people</td></tr></table>
+</div></div>
+<div class="card"><div class="card-header" style="background:var(--blue)">Unit 31 – Transport</div><div class="card-body">
+<table class="tbl"><tr><th>Type</th><th>Examples</th></tr>
+<tr><td>Land Transport</td><td>Bus, Car, Train, Bicycle, Auto-rickshaw</td></tr>
+<tr><td>Water Transport</td><td>Boat, Ship, Ferry, Submarine</td></tr>
+<tr><td>Air Transport</td><td>Aeroplane, Helicopter, Hot air balloon</td></tr></table>
+</div></div>
+<div class="card"><div class="card-header" style="background:var(--purple)">Unit 32 – Communication</div><div class="card-body">
+<div class="example-box">📌 Old ways: Letter, Telegram, Postcard</div>
+<div class="example-box">📌 Modern ways: Telephone, Mobile phone, Internet, Email, Video call</div>
+<div class="remember">✔ Communication means sharing information between people.</div>
+</div></div>`},
+];
+
+// MCQ data (all 50)
+const MCQS=[
+  {q:"Which planet do we live on?",opts:["Mars","Earth","Venus"],ans:1,exp:"Earth is the 3rd planet from the Sun and the only planet known to have life."},
+  {q:"Which is the outermost layer of Earth?",opts:["Core","Mantle","Crust"],ans:2,exp:"The Crust is the thin outer layer of Earth on which we live."},
+  {q:"Which animal lives in water?",opts:["Lion","Fish","Horse"],ans:1,exp:"Fish is a water (aquatic) animal that breathes through gills."},
+  {q:"Which animal is a carnivore?",opts:["Cow","Deer","Tiger"],ans:2,exp:"Tiger eats only meat – it is a carnivore (meat eater)."},
+  {q:"Which animal eats only plants?",opts:["Goat","Lion","Wolf"],ans:0,exp:"Goat eats only grass and plants – it is a herbivore."},
+  {q:"Which insect changes into a butterfly?",opts:["Caterpillar","Spider","Ant"],ans:0,exp:"A caterpillar (larva) is the second stage of a butterfly's life cycle."},
+  {q:"What is the first stage of a butterfly's life cycle?",opts:["Pupa","Egg","Butterfly"],ans:1,exp:"The life cycle starts when an adult butterfly lays an Egg on a leaf."},
+  {q:"Which animal is known as the King of the Jungle?",opts:["Tiger","Lion","Elephant"],ans:1,exp:"Lion is called the King of the Jungle because of its strength and bravery."},
+  {q:"Which layer is at the centre of Earth?",opts:["Core","Crust","Mantle"],ans:0,exp:"The Core is the innermost and hottest layer at the centre of Earth."},
+  {q:"Which animal can live both on land and in water?",opts:["Frog","Cat","Cow"],ans:0,exp:"Frog is an amphibian – it can breathe and live on both land and in water."},
+  {q:"Which bird cannot fly?",opts:["Sparrow","Penguin","Eagle"],ans:1,exp:"Penguin has wings but uses them for swimming, not flying."},
+  {q:"Which source gives us light during the day?",opts:["Moon","Sun","Star"],ans:1,exp:"The Sun is a star that gives us heat and light throughout the day."},
+  {q:"Which season is the hottest?",opts:["Winter","Rainy","Summer"],ans:2,exp:"Summer is the hottest season with very high temperatures."},
+  {q:"Which gas do plants need to make food?",opts:["Oxygen","Carbon Dioxide","Nitrogen"],ans:1,exp:"Plants take in Carbon Dioxide and use sunlight to make food (photosynthesis)."},
+  {q:"Which gas do humans breathe in?",opts:["Oxygen","Helium","Hydrogen"],ans:0,exp:"Humans breathe in Oxygen and breathe out Carbon Dioxide."},
+  {q:"Which is a domestic animal?",opts:["Tiger","Dog","Lion"],ans:1,exp:"Dog is a domestic animal kept by humans as a pet and guard."},
+  {q:"Which is a wild animal?",opts:["Cat","Cow","Leopard"],ans:2,exp:"Leopard is a wild animal that lives in forests and hunts for food."},
+  {q:"How many stages are in a butterfly's life cycle?",opts:["3","4","5"],ans:1,exp:"Egg → Larva → Pupa → Adult Butterfly = 4 stages."},
+  {q:"Which animal gives us wool?",opts:["Sheep","Goat","Dog"],ans:0,exp:"Sheep gives us wool which is used to make warm clothes."},
+  {q:"Which animal gives us milk?",opts:["Cow","Tiger","Wolf"],ans:0,exp:"Cow is a domestic animal that gives us milk to drink."},
+  {q:"What covers most of Earth's surface?",opts:["Water","Sand","Mountains"],ans:0,exp:"About 71% of Earth's surface is covered by water (oceans and seas)."},
+  {q:"Which part of a plant absorbs water from soil?",opts:["Leaf","Root","Flower"],ans:1,exp:"Roots grow underground and absorb water and minerals from the soil."},
+  {q:"Which part of a plant makes food?",opts:["Leaf","Root","Stem"],ans:0,exp:"Leaves make food for the plant using sunlight, water, and CO2 (photosynthesis)."},
+  {q:"Which organ helps us see?",opts:["Ear","Eye","Nose"],ans:1,exp:"Eyes are the sense organs that help us see the world around us."},
+  {q:"Which organ helps us hear?",opts:["Ear","Tongue","Eye"],ans:0,exp:"Ears are the sense organs that receive sound waves and help us hear."},
+  {q:"Which organ helps us smell?",opts:["Nose","Hand","Ear"],ans:0,exp:"The Nose detects smells and also helps in breathing."},
+  {q:"Which organ helps us taste?",opts:["Tongue","Eye","Ear"],ans:0,exp:"The Tongue has taste buds that help us taste sweet, sour, salty, and bitter."},
+  {q:"Which animal lays eggs?",opts:["Hen","Cow","Dog"],ans:0,exp:"Hen lays eggs. Birds, reptiles, fish, and insects also lay eggs."},
+  {q:"Which animal lives in a den?",opts:["Lion","Horse","Goat"],ans:0,exp:"A den is the home of a lion. Lions rest and raise their young ones there."},
+  {q:"Which animal lives in a stable?",opts:["Horse","Tiger","Lion"],ans:0,exp:"A stable is the shelter kept for horses on a farm."},
+  {q:"Which bird lives in a nest?",opts:["Sparrow","Fish","Frog"],ans:0,exp:"Sparrow builds a nest on trees using twigs and grass to lay eggs."},
+  {q:"Which planet is called the Blue Planet?",opts:["Earth","Mars","Jupiter"],ans:0,exp:"Earth looks blue from space because most of its surface is covered by water."},
+  {q:"Which season brings heavy rain?",opts:["Summer","Rainy","Winter"],ans:1,exp:"The Rainy season (Monsoon) brings heavy rainfall and fills rivers and lakes."},
+  {q:"Which is a water animal?",opts:["Dolphin","Camel","Horse"],ans:0,exp:"Dolphin is a water mammal that lives in oceans and seas."},
+  {q:"Which is an omnivore?",opts:["Human","Cow","Deer"],ans:0,exp:"Humans eat both plants (vegetables, fruits) and meat – so we are omnivores."},
+  {q:"What do bees collect from flowers?",opts:["Nectar","Milk","Water"],ans:0,exp:"Bees collect nectar from flowers and convert it into honey in their beehive."},
+  {q:"Which insect makes honey?",opts:["Bee","Ant","Mosquito"],ans:0,exp:"Honey Bees make honey which is sweet and healthy for us."},
+  {q:"Which star gives us heat and light?",opts:["Sun","Moon","Earth"],ans:0,exp:"The Sun is the nearest star to Earth. It gives us heat, light, and energy."},
+  {q:"Which planet is nearest to the Sun?",opts:["Mercury","Earth","Mars"],ans:0,exp:"Mercury is the first planet from the Sun and the smallest planet."},
+  {q:"Which animal has a trunk?",opts:["Elephant","Lion","Deer"],ans:0,exp:"Elephant has a long trunk used for breathing, smelling, picking up objects, and drinking."},
+  {q:"Which animal is known as the Ship of the Desert?",opts:["Camel","Horse","Donkey"],ans:0,exp:"Camel walks long distances in deserts without water – hence 'Ship of the Desert'."},
+  {q:"Which body part helps us walk?",opts:["Legs","Eyes","Ears"],ans:0,exp:"Our legs have bones and muscles that help us stand, walk, run, and jump."},
+  {q:"Which body part helps us hold things?",opts:["Hands","Nose","Eyes"],ans:0,exp:"Hands with fingers help us hold, write, carry, and do many daily activities."},
+  {q:"Which is a healthy food?",opts:["Fruits","Chips","Candy"],ans:0,exp:"Fruits give us vitamins and minerals; junk food like chips and candy harm our health."},
+  {q:"Which is a source of water?",opts:["River","Road","House"],ans:0,exp:"Rivers, lakes, ponds, wells, and rain are natural sources of water."},
+  {q:"Which is a natural source of light?",opts:["Sun","Bulb","Torch"],ans:0,exp:"The Sun is a natural source of light; bulb and torch are man-made (artificial)."},
+  {q:"Which animal lives in water?",opts:["Whale","Dog","Cat"],ans:0,exp:"Whale is the largest animal on Earth and lives in the ocean."},
+  {q:"Which is the middle layer of Earth?",opts:["Mantle","Crust","Core"],ans:0,exp:"The Mantle is the thick middle layer of Earth made of hot semi-liquid rock called magma."},
+  {q:"Which animal has black and white stripes?",opts:["Zebra","Lion","Deer"],ans:0,exp:"Zebra has black and white stripes – it is a wild animal from Africa."},
+  {q:"Which is the national animal of India?",opts:["Tiger","Elephant","Lion"],ans:0,exp:"Tiger (Bengal Tiger) is the National Animal of India."},
+];
+
+// Short Q&A data (Q51-Q100)
+const SHORTQA=[
+  {n:51,q:"What is Earth?",a:"Earth is the third planet from the Sun and the only planet with life.",e:"Earth has air, water, and suitable temperature for living things to survive."},
+  {n:52,q:"Name the three layers of Earth.",a:"The three layers are: Crust, Mantle, and Core.",e:"Crust is the outer layer, Mantle is the middle, and Core is the innermost layer."},
+  {n:53,q:"Which layer of Earth do we live on?",a:"We live on the Crust – the outermost layer of Earth.",e:"The crust is the thinnest but most important layer as it supports all life."},
+  {n:54,q:"What are water animals?",a:"Water animals are animals that live in water.",e:"They are also called aquatic animals. Examples: Fish, Dolphin, Whale, Shark."},
+  {n:55,q:"Give two examples of water animals.",a:"Fish and Dolphin are two water animals.",e:"Fish breathes through gills; Dolphin is a mammal that breathes through a blowhole."},
+  {n:56,q:"What are land animals?",a:"Land animals are animals that live on land.",e:"Examples: Lion, Tiger, Elephant, Deer, Horse."},
+  {n:57,q:"Give two examples of land animals.",a:"Lion and Elephant are two land animals.",e:"Both are wild animals – Lion lives in a den, Elephant lives in forests."},
+  {n:58,q:"What are carnivorous animals?",a:"Carnivorous animals eat only the flesh (meat) of other animals.",e:"They have sharp teeth and claws to catch and eat prey."},
+  {n:59,q:"Give two examples of carnivores.",a:"Lion and Tiger are two carnivorous animals.",e:"Both hunt and eat other animals for food."},
+  {n:60,q:"What are herbivorous animals?",a:"Herbivorous animals eat only plants, grass, leaves, and fruits.",e:"They have flat teeth to chew and grind plant material."},
+  {n:61,q:"Give two examples of herbivores.",a:"Cow and Deer are two herbivorous animals.",e:"Both eat only plants and do not eat meat."},
+  {n:62,q:"What are omnivorous animals?",a:"Omnivorous animals eat both plants and meat.",e:"They can digest both types of food. Example: Human, Bear, Crow."},
+  {n:63,q:"Give two examples of omnivores.",a:"Human and Bear are two omnivorous animals.",e:"Humans eat both vegetables and meat; Bears eat berries as well as fish."},
+  {n:64,q:"What is the first stage of a butterfly's life cycle?",a:"The first stage is the Egg.",e:"The adult butterfly lays tiny eggs on the leaves of a plant."},
+  {n:65,q:"What is a caterpillar?",a:"A caterpillar is the larva (2nd stage) of a butterfly that eats leaves.",e:"It looks like a worm and eats a lot to grow bigger."},
+  {n:66,q:"What is a chrysalis (pupa)?",a:"A chrysalis is the hard covering inside which the caterpillar changes into a butterfly.",e:"This is the resting stage – no eating, but big changes happen inside."},
+  {n:67,q:"Name the four stages of a butterfly's life cycle.",a:"Egg → Larva (Caterpillar) → Pupa (Chrysalis) → Adult Butterfly.",e:"This process of change is called Metamorphosis."},
+  {n:68,q:"Why do plants need water?",a:"Plants need water for photosynthesis, growth, and to stay firm.",e:"Without water, plants wilt and die."},
+  {n:69,q:"What is photosynthesis?",a:"Photosynthesis is the process by which plants make their own food using sunlight.",e:"Plants use sunlight + water + CO2 to make glucose and release oxygen."},
+  {n:70,q:"Which part of the plant absorbs water?",a:"The Root absorbs water and minerals from the soil.",e:"Roots also hold the plant firmly in the ground."},
+  {n:71,q:"Which part of the plant makes food?",a:"The Leaf makes food for the plant through photosynthesis.",e:"Leaves are green because of a substance called chlorophyll."},
+  {n:72,q:"Name the five sense organs.",a:"Eyes, Ears, Nose, Tongue, and Skin are the five sense organs.",e:"Each organ helps us collect information about our surroundings."},
+  {n:73,q:"Which organ helps us see?",a:"Eyes help us see.",e:"Eyes detect light and send signals to the brain so we can see images."},
+  {n:74,q:"Which organ helps us hear?",a:"Ears help us hear.",e:"Ears collect sound waves and send them to the brain."},
+  {n:75,q:"Which organ helps us smell?",a:"Nose helps us smell.",e:"The nose also filters air and helps us breathe."},
+  {n:76,q:"Which organ helps us taste?",a:"Tongue helps us taste.",e:"The tongue has taste buds to sense sweet, sour, salty, and bitter flavours."},
+  {n:77,q:"Which organ helps us touch and feel?",a:"Skin helps us touch and feel.",e:"Skin can sense heat, cold, pain, pressure, and texture."},
+  {n:78,q:"What do animals need to survive?",a:"Animals need food, water, air, and shelter to survive.",e:"Without these basic needs, animals cannot live."},
+  {n:79,q:"Name two domestic animals.",a:"Dog and Cow are two domestic animals.",e:"Domestic animals live with humans and are useful to them."},
+  {n:80,q:"Name two wild animals.",a:"Tiger and Lion are two wild animals.",e:"Wild animals live in forests and find their own food."},
+  {n:81,q:"What is a habitat?",a:"A habitat is the natural home or environment where an animal or plant lives.",e:"For example, a fish's habitat is water; a lion's habitat is the forest."},
+  {n:82,q:"Where does a fish live?",a:"A fish lives in water (rivers, lakes, ponds, and oceans).",e:"Fish breathes through gills and has fins to swim."},
+  {n:83,q:"Where does a lion live?",a:"A lion lives in a den in forests and grasslands.",e:"A den is a small cave or hole that acts as the lion's shelter."},
+  {n:84,q:"Why is the Sun important?",a:"The Sun gives us heat, light, and energy needed for life on Earth.",e:"Without the Sun, plants cannot make food, and Earth would be cold and dark."},
+  {n:85,q:"Why is water important?",a:"Water is essential for drinking, cooking, farming, and survival of all living things.",e:"About 70% of our body is made up of water."},
+  {n:86,q:"Name two sources of water.",a:"River and Rain are two sources of water.",e:"Other sources include wells, lakes, ponds, and glaciers."},
+  {n:87,q:"What is rain?",a:"Rain is water that falls from clouds onto the ground.",e:"It is part of the water cycle – water evaporates, forms clouds, and falls as rain."},
+  {n:88,q:"Name three seasons.",a:"Summer, Rainy (Monsoon), and Winter are the three main seasons in India.",e:"Each season brings different weather and temperature."},
+  {n:89,q:"Which season is the coldest?",a:"Winter is the coldest season.",e:"In winter, temperatures drop low; we wear warm clothes like sweaters and jackets."},
+  {n:90,q:"Which season is the hottest?",a:"Summer is the hottest season.",e:"In summer, temperatures are very high; we drink more water and wear light clothes."},
+  {n:91,q:"What do bees make?",a:"Bees make honey.",e:"Bees collect nectar from flowers and store it in honeycombs inside their beehive."},
+  {n:92,q:"Why should we eat fruits and vegetables?",a:"Fruits and vegetables give us vitamins, minerals, and fibre for good health.",e:"They keep our body strong, boost immunity, and protect from diseases."},
+  {n:93,q:"What is pollution?",a:"Pollution means making air, water, or land dirty and harmful.",e:"Types: Air pollution (smoke), Water pollution (waste in rivers), Noise pollution (loud sounds)."},
+  {n:94,q:"How can we save water?",a:"We can save water by closing taps, using water carefully, and not wasting it.",e:"Rainwater harvesting and reusing water also help save this precious resource."},
+  {n:95,q:"How can we keep our surroundings clean?",a:"We should not litter, dispose of waste properly, and keep our home and school clean.",e:"Clean surroundings prevent diseases and make the environment beautiful."},
+  {n:96,q:"Why should we plant trees?",a:"Trees give us oxygen, food, wood, shade, and help prevent pollution.",e:"They also stop soil erosion and provide homes for birds and animals."},
+  {n:97,q:"What is the national animal of India?",a:"Tiger (Bengal Tiger) is the national animal of India.",e:"It was chosen as the national animal to promote its conservation."},
+  {n:98,q:"What is the national bird of India?",a:"Peacock is the national bird of India.",e:"The Peacock is known for its beautiful colourful feathers."},
+  {n:99,q:"What is the importance of air?",a:"Air contains oxygen which all living things need to breathe and survive.",e:"Air also helps in flying, burning, weather, and the water cycle."},
+  {n:100,q:"Why should we protect animals?",a:"We should protect animals because they are part of our ecosystem and food chain.",e:"Losing animals disturbs nature's balance – we must stop hunting and save their habitats."},
+];
+
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let mcqAnswers={};
+let currentGroup='all';
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+function init(){
+  renderUnits();
+  renderTheoryFilters();
+  renderTheory('food');
+  renderMCQ();
+  renderQA();
+}
+
+// ══════════════════════════════════════════════
+// TAB NAVIGATION
+// ══════════════════════════════════════════════
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const tabs=document.querySelectorAll('.tab');
+  const map={syllabus:0,theory:1,diagrams:2,mcq:3,shortqa:4,revision:5};
+  if(map[id]!==undefined) tabs[map[id]].classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ══════════════════════════════════════════════
+// SYLLABUS
+// ══════════════════════════════════════════════
+function renderUnits(filter='all',search=''){
+  const g=document.getElementById('unitGrid');
+  const lc=search.toLowerCase();
+  const cards=UNITS.filter(u=>{
+    const matchGroup=filter==='all'||u.group===filter;
+    const matchSearch=!lc||u.name.toLowerCase().includes(lc)||u.topics.toLowerCase().includes(lc);
+    return matchGroup&&matchSearch;
+  }).map(u=>`
+    <div class="unit-card">
+      <div class="unit-num">Unit ${u.n}</div>
+      <div class="unit-name">${u.name}</div>
+      <div class="unit-topics">${u.topics}</div>
+    </div>`).join('');
+  g.innerHTML=cards||'<p style="color:var(--grey);padding:10px">No units found.</p>';
+}
+function filterUnits(){renderUnits(currentGroup,document.getElementById('unitSearch').value)}
+function filterGroup(el,grp){
+  document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');currentGroup=grp;filterUnits();
+}
+
+// ══════════════════════════════════════════════
+// THEORY
+// ══════════════════════════════════════════════
+function renderTheoryFilters(){
+  const c=document.getElementById('theoryFilter');
+  c.innerHTML=THEORY_SECTIONS.map((s,i)=>`
+    <div class="fchip${i===0?' active':''}" onclick="selectTheory(this,'${s.id}')">${s.label}</div>`).join('');
+}
+function renderTheory(id){
+  const s=THEORY_SECTIONS.find(x=>x.id===id);
+  document.getElementById('theoryContent').innerHTML=s?s.content:'';
+}
+function selectTheory(el,id){
+  document.querySelectorAll('#theoryFilter .fchip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');renderTheory(id);
+}
+
+// ══════════════════════════════════════════════
+// MCQ
+// ══════════════════════════════════════════════
+function renderMCQ(){
+  const c=document.getElementById('mcqContainer');
+  c.innerHTML=MCQS.map((q,qi)=>`
+    <div class="mcq-block" id="mcq_${qi}">
+      <div class="mcq-q">Q${qi+1}. ${q.q}</div>
+      ${q.opts.map((o,oi)=>`
+        <div class="opt" id="opt_${qi}_${oi}" onclick="answerMCQ(${qi},${oi})">
+          <div class="opt-icon" id="icon_${qi}_${oi}">${String.fromCharCode(65+oi)}</div>
+          ${o}
+        </div>`).join('')}
+      <div class="explain" id="exp_${qi}">💡 ${q.exp}</div>
+    </div>`).join('');
+}
+function answerMCQ(qi,selected){
+  if(mcqAnswers[qi]!==undefined) return;
+  mcqAnswers[qi]=selected;
+  const q=MCQS[qi];
+  q.opts.forEach((_,oi)=>{
+    const opt=document.getElementById(`opt_${qi}_${oi}`);
+    const icon=document.getElementById(`icon_${qi}_${oi}`);
+    if(oi===q.ans){opt.classList.add('correct');icon.textContent='✓'}
+    else if(oi===selected&&selected!==q.ans){opt.classList.add('wrong');icon.textContent='✗'}
+  });
+  document.getElementById(`exp_${qi}`).style.display='block';
+  updateScore();
+}
+function updateScore(){
+  const answered=Object.keys(mcqAnswers).length;
+  const correct=Object.entries(mcqAnswers).filter(([qi,a])=>MCQS[qi].ans===a).length;
+  document.getElementById('scoreNum').textContent=correct;
+  document.getElementById('scoreLabel').textContent=`${correct} / ${answered} answered`;
+  document.getElementById('answeredCount').textContent=`${answered} of 50 answered`;
+  document.getElementById('progFill').style.width=(answered/50*100)+'%';
+}
+function resetMCQ(){
+  mcqAnswers={};renderMCQ();
+  document.getElementById('scoreNum').textContent='0';
+  document.getElementById('scoreLabel').textContent='0 / 50';
+  document.getElementById('answeredCount').textContent='0 answered';
+  document.getElementById('progFill').style.width='0%';
+}
+function revealAllMCQ(){
+  MCQS.forEach((_,qi)=>{if(mcqAnswers[qi]===undefined) answerMCQ(qi,MCQS[qi].ans)});
+}
+
+// ══════════════════════════════════════════════
+// SHORT Q&A
+// ══════════════════════════════════════════════
+function renderQA(filter=''){
+  const lc=filter.toLowerCase();
+  const items=SHORTQA.filter(q=>!lc||q.q.toLowerCase().includes(lc)||q.a.toLowerCase().includes(lc));
+  document.getElementById('qaContainer').innerHTML=items.map(q=>`
+    <div class="qa-item">
+      <div class="qa-q" data-open="0" onclick="toggleQA(this)">
+        <span><b style="color:var(--green)">Q${q.n}.</b> ${q.q}</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="qa-a">
+        <div class="qa-ans">✔ ${q.a}</div>
+        <div class="qa-exp">💡 ${q.e}</div>
+      </div>
+    </div>`).join('');
+}
+function toggleQA(el){
+  const ans=el.nextElementSibling;
+  const isOpen=el.getAttribute('data-open')==='1';
+  ans.classList.toggle('open',!isOpen);
+  el.setAttribute('data-open',isOpen?'0':'1');
+}
+function filterQA(){renderQA(document.getElementById('qaSearch').value)}
+function expandAllQA(){
+  document.querySelectorAll('.qa-q').forEach(q=>{q.setAttribute('data-open','1');q.nextElementSibling.classList.add('open')});
+}
+function collapseAllQA(){
+  document.querySelectorAll('.qa-q').forEach(q=>{q.setAttribute('data-open','0');q.nextElementSibling.classList.remove('open')});
+}
+
+init();
+</script>
+</body>
+</html>
